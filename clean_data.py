@@ -5,27 +5,19 @@ import pandas as pd
 
 
 def insert_data_0(csv_file, db_file):
-    """
-    Insert data from Table 0 into the database.
-    """
     conn = sqlite3.connect(db_file)
     c = conn.cursor()
 
-    # Read CSV file into a DataFrame
     df = pd.read_csv(csv_file)
 
-    # Insert unique products into the product table
     products = df['product'].unique()
     for product in products:
         c.execute('INSERT OR IGNORE INTO product (name) VALUES (?)', (product,))
 
-    # Commit the product insertions
     conn.commit()
 
-    # Create a mapping of product names to product IDs
     product_id_map = {row[1]: row[0] for row in c.execute('SELECT id, name FROM product').fetchall()}
 
-    # Insert data into the shipment table
     for _, row in df.iterrows():
         c.execute('''
             INSERT INTO shipment (product_id, quantity, origin, destination)
@@ -37,7 +29,6 @@ def insert_data_0(csv_file, db_file):
             row['destination_store']        # Destination store
         ))
 
-    # Commit and close the connection
     conn.commit()
     conn.close()
 
@@ -87,10 +78,8 @@ spreadsheet_1 = 'data/shipping_data_1.csv'
 spreadsheet_2 = 'data/shipping_data_2.csv'
 
 
-# Process Spreadsheet 0
 insert_data_0(spreadsheet_0, db_file)
 
-# Process Spreadsheets 1 and 2
 insert_data_1_2(spreadsheet_1, spreadsheet_2, db_file)
 
 
